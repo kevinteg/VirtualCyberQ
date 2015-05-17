@@ -1,0 +1,37 @@
+<nutcallstatus>
+<!--this is similar to status.xml, but with more values-->
+<!--all temperatures are displayed in tenths F, regardless of setting of unit-->
+<!--all temperatures sent by browser to unit should be in F.  you can send-->
+<!--tenths F with a decimal place, ex: 123.5-->
+<COOK>
+  <COOK_NAME>{{ status.cook_status.name }}</COOK_NAME>
+  <COOK_TEMP>{{ status.cook_status.temp }}</COOK_TEMP>
+  <COOK_SET>{{ status.cook_status.temp_set }}</COOK_SET>
+  <COOK_STATUS>{{ status.cook_status.status }}</COOK_STATUS>
+</COOK>
+<FOOD1>
+  <FOOD1_NAME>{{ status.food1_status.name }}</FOOD1_NAME>
+  <FOOD1_TEMP>{{ status.food1_status.temp }}</FOOD1_TEMP>
+  <FOOD1_SET>{{ status.food1_status.temp_set }}</FOOD1_SET>
+  <FOOD1_STATUS>{{ status.food1_status.status }}</FOOD1_STATUS>
+</FOOD1>
+<FOOD2>
+  <FOOD2_NAME>{{ status.food2_status.name }}</FOOD2_NAME>
+  <FOOD2_TEMP>{{ status.food2_status.temp }}</FOOD2_TEMP>
+  <FOOD2_SET>{{ status.food2_status.temp_set }}</FOOD2_SET>
+  <FOOD2_STATUS>{{ status.food2_status.status }}</FOOD2_STATUS>
+</FOOD2>
+<FOOD3>
+  <FOOD3_NAME>{{ status.food3_status.name }}</FOOD3_NAME>
+  <FOOD3_TEMP>{{ status.food3_status.temp }}</FOOD3_TEMP>
+  <FOOD3_SET>{{ status.food3_status.temp_set }}</FOOD3_SET>
+  <FOOD3_STATUS>{{ status.food3_status.status }}</FOOD3_STATUS>
+</FOOD3>
+<OUTPUT_PERCENT>{{ status.output_percent }}</OUTPUT_PERCENT>
+<TIMER_CURR>{{ status.time_remaining() }}</TIMER_CURR>
+<TIMER_STATUS>{{ status.timer_status }}</TIMER_STATUS>
+<DEG_UNITS>{{ status.system_status.deg_units }}</DEG_UNITS>
+<COOK_CYCTIME>{{ status.control_status.cyctime }}</COOK_CYCTIME>
+<COOK_PROPBAND>{{ status.control_status.propband }}</COOK_PROPBAND>
+<COOK_RAMP>{{ status.control_status.cookramp }}</COOK_RAMP>
+</nutcallstatus>

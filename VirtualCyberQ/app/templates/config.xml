@@ -1,0 +1,72 @@
+<nutcallstatus>
+<!--this is similar to all.xml, but with more values-->
+<!--all temperatures are displayed in tenths F, regardless of setting of unit-->
+<!--all temperatures sent by browser to unit should be in F.  you can send-->
+<!--tenths F with a decimal place, ex: 123.5-->
+<COOK>
+  <COOK_NAME>{{ status.cook_status.name }}</COOK_NAME>
+  <COOK_TEMP>{{ status.cook_status.temp }}</COOK_TEMP>
+  <COOK_SET>{{ status.cook_status.temp_set }}</COOK_SET>
+  <COOK_STATUS>{{ status.cook_status.status }}</COOK_STATUS>
+</COOK>
+<FOOD1>
+  <FOOD1_NAME>{{ status.food1_status.name }}</FOOD1_NAME>
+  <FOOD1_TEMP>{{ status.food1_status.temp }}</FOOD1_TEMP>
+  <FOOD1_SET>{{ status.food1_status.temp_set }}</FOOD1_SET>
+  <FOOD1_STATUS>{{ status.food1_status.status }}</FOOD1_STATUS>
+</FOOD1>
+<FOOD2>
+  <FOOD2_NAME>{{ status.food2_status.name }}</FOOD2_NAME>
+  <FOOD2_TEMP>{{ status.food2_status.temp }}</FOOD2_TEMP>
+  <FOOD2_SET>{{ status.food2_status.temp_set }}</FOOD2_SET>
+  <FOOD2_STATUS>{{ status.food2_status.status }}</FOOD2_STATUS>
+</FOOD2>
+<FOOD3>
+  <FOOD3_NAME>{{ status.food3_status.name }}</FOOD3_NAME>
+  <FOOD3_TEMP>{{ status.food3_status.temp }}</FOOD3_TEMP>
+  <FOOD3_SET>{{ status.food3_status.temp_set }}</FOOD3_SET>
+  <FOOD3_STATUS>{{ status.food3_status.status }}</FOOD3_STATUS>
+</FOOD3>
+<OUTPUT_PERCENT>{{ status.output_percent }}</OUTPUT_PERCENT>
+<TIMER_CURR>{{ status.time_remaining() }}</TIMER_CURR>
+<TIMER_STATUS>{{ status.timer_status }}</TIMER_STATUS>
+<SYSTEM>
+  <MENU_SCROLLING>{{ status.system_status.menu_scrolling }}</MENU_SCROLLING>
+  <LCD_BACKLIGHT>{{ status.system_status.lcd_backlight }}</LCD_BACKLIGHT>
+  <LCD_CONTRAST>{{ status.system_status.lcd_contrast }}</LCD_CONTRAST>
+  <DEG_UNITS>{{ status.system_status.deg_units }}</DEG_UNITS>
+  <ALARM_BEEPS>{{ status.system_status.alarm_beeps }}</ALARM_BEEPS>
+  <KEY_BEEPS>{{ status.system_status.key_beeps }}</KEY_BEEPS>
+</SYSTEM>
+<CONTROL>
+  <TIMEOUT_ACTION>{{ status.control_status.timeout_action }}</TIMEOUT_ACTION>
+  <COOKHOLD>{{ status.control_status.cookhold }}</COOKHOLD>
+  <ALARMDEV>{{ status.control_status.alarmdev }}</ALARMDEV>
+  <COOK_RAMP>{{ status.control_status.cookramp }}</COOK_RAMP>
+  <OPENDETECT>{{ status.control_status.opendetect }}</OPENDETECT>
+  <CYCTIME>{{ status.control_status.cyctime }}</CYCTIME>
+  <PROPBAND>{{ status.control_status.propband }}</PROPBAND>
+</CONTROL>
+<WIFI>
+  <IP>{{ status.wifi_status.ip }}</IP>
+  <NM>{{ status.wifi_status.nm }}</NM>
+  <GW>{{ status.wifi_status.gw }}</GW>
+  <DNS>{{ status.wifi_status.dns }}</DNS>
+  <WIFIMODE>{{ status.wifi_status.wifimode }}</WIFIMODE>
+  <DHCP>{{ status.wifi_status.dhcp }}</DHCP>
+  <SSID>{{ status.wifi_status.ssid }}</SSID>
+  <WIFI_ENC>{{ status.wifi_status.wifi_enc }}</WIFI_ENC>
+  <WIFI_KEY>{{ status.wifi_status.wifi_key }}</WIFI_KEY>
+  <HTTP_PORT>{{ status.wifi_status.http_port }}</HTTP_PORT>
+</WIFI>
+<SMTP>
+  <SMTP_HOST>{{ status.smtp_status.host }}</SMTP_HOST>
+  <SMTP_PORT>{{ status.smtp_status.port }}</SMTP_PORT>
+  <SMTP_USER>{{ status.smtp_status.user }}</SMTP_USER>
+  <SMTP_PWD>{{ status.smtp_status.pwd }}</SMTP_PWD>
+  <SMTP_TO>{{ status.smtp_status.msg_to }}</SMTP_TO>
+  <SMTP_FROM>{{ status.smtp_status.msg_from }}</SMTP_FROM>
+  <SMTP_SUBJ>{{ status.smtp_status.msg_subj }}</SMTP_SUBJ>
+  <SMTP_ALERT>{{ status.smtp_status.alert }}</SMTP_ALERT>
+</SMTP>
+</nutcallstatus>

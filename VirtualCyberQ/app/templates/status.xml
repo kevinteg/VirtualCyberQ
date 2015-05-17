@@ -1,0 +1,20 @@
+<nutcstatus>
+<!--all temperatures are displayed in tenths F, regardless of setting of unit-->
+<!--all temperatures sent by browser to unit should be in F.  you can send-->
+<!--tenths F with a decimal place, ex: 123.5-->
+<OUTPUT_PERCENT>{{ status.output_percent }}</OUTPUT_PERCENT>
+<TIMER_CURR>{{ status.time_remaining() }}</TIMER_CURR>
+<COOK_TEMP>{{ status.cook_status.temp }}</COOK_TEMP>
+<FOOD1_TEMP>{{ status.food1_status.temp }}</FOOD1_TEMP>
+<FOOD2_TEMP>{{ status.food2_status.temp }}</FOOD2_TEMP>
+<FOOD3_TEMP>{{ status.food3_status.temp }}</FOOD3_TEMP>
+<COOK_STATUS>{{ status.cook_status.status }}</COOK_STATUS>
+<FOOD1_STATUS>{{ status.food1_status.status }}</FOOD1_STATUS>
+<FOOD2_STATUS>{{ status.food2_status.status }}</FOOD2_STATUS>
+<FOOD3_STATUS>{{ status.food3_status.status }}</FOOD3_STATUS>
+<TIMER_STATUS>{{ status.timer_status }}</TIMER_STATUS>
+<DEG_UNITS>{{ status.system_status.deg_units }}</DEG_UNITS>
+<COOK_CYCTIME>{{ status.control_status.cyctime }}</COOK_CYCTIME>
+<COOK_PROPBAND>{{ status.control_status.propband }}</COOK_PROPBAND>
+<COOK_RAMP>{{ status.control_status.cookramp }}</COOK_RAMP>
+</nutcstatus>
