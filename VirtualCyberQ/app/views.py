@@ -1,20 +1,21 @@
 from app import app
 from flask import render_template
 from flask import request
+from flask import Response
 
 from status import Status
 
 @app.route('/config.xml')
 def config():
-    return render_template('config.xml', status=Status.instance())
+    return response_of('config.xml')
 
 @app.route('/status.xml')
 def status():
-    return render_template('status.xml', status=Status.instance())
+    return response_of('status.xml')
 
 @app.route('/all.xml')
 def all():
-    return render_template('all.xml', status=Status.instance())
+    return response_of('all.xml')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -30,3 +31,7 @@ def update():
         status.update(key, value)
 
     return ""
+
+def response_of(template):
+    content = render_template(template, status=Status.instance())
+    return Response(content, mimetype='text/xml')
