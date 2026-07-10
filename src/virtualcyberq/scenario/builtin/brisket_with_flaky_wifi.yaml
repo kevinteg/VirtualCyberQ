@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: BSD-3-Clause
+name: brisket_with_flaky_wifi
+description: >
+  13 lb brisket + two chicken quarters at 250F, a mid-cook probe disconnect,
+  a burst of HTTP 500s, and a stall assertion. Deterministic under seed 42.
+seed: 42
+speed: 600                      # 1 wall-sec = 10 sim-min (override per-run)
+persona: "3.1"                  # firmware persona
+
+initial:
+  state:
+    control: { propband: 25, cyctime: 6, alarmdev: 50, cook_ramp: FOOD1 }
+    system:  { deg_units: FAHRENHEIT }
+  profile:
+    pit:   { start_f: 70, ambient_f: 70, cook_set_f: 250 }
+    food1: { cut: brisket,          set_f: 203, mass_lb: 13, wrapped: false }
+    food2: { cut: chicken_quarters, set_f: 175, mass_lb: 0.7 }
+    food3: { disconnected: true }   # emits OPEN / STATUS=4
+
+timeline:
+  - at: 0m
+    set: { cook: { set: 2500 } }    # tenths-F when writing state directly
+
+  - at: 20m
+    assert:                          # the blower has driven the pit into the cook range (with cold-start overshoot)
+      pit_temp_f: { ">=": 245, "<=": 285 }
+
+  - at: 1h
+    assert:                          # settled near the 250F setpoint (small proportional droop is expected)
+      pit_temp_f: { ">=": 235, "<=": 255 }
+      cook_status: OK
+
+  - at: 3h30m
+    fault: { id: probe.open, params: { probe: food2 }, duration_s: 600 }
+
+  - at: 4h
+    assert:                          # the brisket has entered the stall (evaporative plateau ~150-170F)
+      food1_temp_f: { ">=": 145, "<=": 175 }
+
+  - at: 4h15m
+    fault: { id: http.error, params: { status: 500 }, probability: 1.0, count: 5 }
+
+  - at: 8h
+    assert:                          # past the stall and climbing; COOK_RAMP has eased the pit down toward the finish
+      food1_temp_f: { ">=": 185 }
+      pit_temp_f: { "<=": 235 }

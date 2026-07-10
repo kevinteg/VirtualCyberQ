@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: BSD-3-Clause
+name: flaky_wifi
+description: >
+  A steady 225F pit with an intermittent, congested-WiFi network profile:
+  latency, a burst of HTTP 500s, a brief blackhole, and a short power blip.
+  Exercises a client's retry/degradation paths deterministically under seed 7.
+seed: 7
+speed: 600
+persona: "3.1"
+
+initial:
+  state:
+    control: { propband: 25, cyctime: 6, alarmdev: 50 }
+    system:  { deg_units: FAHRENHEIT }
+  profile:
+    pit:   { start_f: 70, ambient_f: 70, cook_set_f: 225 }
+    food1: { cut: pork_butt, set_f: 203, mass_lb: 8 }
+
+timeline:
+  - at: 0m
+    set: { cook: { set: 2250 } }
+
+  - at: 20m
+    assert:                          # driven up into the cook range (with cold-start overshoot above the 225F set)
+      pit_temp_f: { ">=": 210, "<=": 265 }
+
+  - at: 30m
+    fault: { id: net.latency, params: { mean_ms: 800, jitter_ms: 400 }, duration_s: 600 }
+
+  - at: 45m
+    fault: { id: http.error, params: { status: 500 }, probability: 0.5, count: 4 }
+
+  - at: 1h
+    fault: { id: net.blackhole, duration_s: 15 }
+
+  - at: 1h30m
+    fault: { id: power.brownout, duration_s: 20, params: { reset: false } }
+
+  - at: 2h
+    assert:
+      pit_temp_f: { ">=": 200, "<=": 245 }

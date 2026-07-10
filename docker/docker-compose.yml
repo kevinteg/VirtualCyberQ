@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# Run VirtualCyberQ with both planes exposed, env-driven config, and a
+# healthcheck against the admin liveness endpoint.
+#
+#     docker compose -f docker/docker-compose.yml up --build
+#
+# Device plane  -> http://localhost:8080          (point your CyberQ client here)
+# Admin plane   -> http://localhost:9000/__admin/docs
+#
+# Tunables are exposed as environment variables with sane defaults; override
+# them inline, e.g.:
+#     CYBERQ_SEED=42 CYBERQ_SPEED=600 CYBERQ_SCENARIO=brisket_with_flaky_wifi \
+#         docker compose -f docker/docker-compose.yml up
+
+services:
+  virtualcyberq:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: ghcr.io/kevinteg/virtualcyberq:latest
+    container_name: virtualcyberq
+    ports:
+      - "8080:8080" # device plane
+      - "9000:9000" # admin / control plane
+    # The CLI takes flags; feed env-configured values through the command.
+    command:
+      - "--seed"
+      - "${CYBERQ_SEED:-0}"
+      - "--speed"
+      - "${CYBERQ_SPEED:-1.0}"
+      - "--persona"
+      - "${CYBERQ_PERSONA:-3.1}"
+    # Uncomment to preload a scenario:
+    #   - "--scenario"
+    #   - "${CYBERQ_SCENARIO:-brisket_with_flaky_wifi}"
+    healthcheck:
+      # python:3.12-slim has no curl/wget; use the interpreter that is present.
+      test:
+        - "CMD"
+        - "python"
+        - "-c"
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:9000/__admin/health', timeout=3).status == 200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped

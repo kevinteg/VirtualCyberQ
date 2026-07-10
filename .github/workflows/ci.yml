@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: BSD-3-Clause
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: py${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          # Also exercise the newest interpreter on macOS.
+          - os: macos-latest
+            python-version: "3.13"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install (editable, with dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+
+      - name: Ruff lint
+        run: ruff check --output-format=github .
+
+      - name: Ruff format check
+        run: ruff format --check .
+
+      - name: Mypy (strict)
+        run: mypy
+
+      - name: Import-linter (core/ imports no web framework)
+        # Fail the build if core/ ever gains a fastapi/flask/starlette/uvicorn import.
+        run: lint-imports
+
+      - name: Pytest with coverage
+        run: |
+          coverage run -m pytest
+          coverage xml
+          coverage report
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-py${{ matrix.python-version }}-${{ matrix.os }}
+          path: coverage.xml
+          if-no-files-found: ignore
