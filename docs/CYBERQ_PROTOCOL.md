@@ -11,6 +11,13 @@ Every non-obvious claim carries a confidence tag:
 - **[V]** — VERIFIED in a cited source (see §14 for URLs).
 - **[I]** — INFERRED by expert reasoning; not directly published. Treat as a modeling choice.
 
+> **Verified against a real CyberQ WiFi (firmware 1.7), 2026-07-10.** Captured `status.xml` / `all.xml` / `config.xml` dumps confirmed and corrected several details this document originally inferred:
+> - The temperature comment block lives **inside** the root element (after `<nutcstatus>` / `<nutcallstatus>`), as **two** lines (`…should be in F.  you can send tenths F with a decimal place, ex: 123.5`), not three; `all.xml` and `config.xml` additionally open with a `<!--this is similar to …-->` lead comment. Indentation is 3 spaces per level.
+> - `status.xml` on firmware 1.7 does **not** include a `FAN_SHORTED` element.
+> - In `<WIFI>`, `<MAC>` appears **immediately after `<SSID>`** (before `WIFI_ENC`).
+> - Factory defaults observed: `COOK_SET` 275, `FOOD*_SET` 180, `COOKHOLD` 200, `ALARMDEV` 50, **`PROPBAND` 300 (30 °F, not 25)**, `CYCTIME` 6, `TIMEOUT_ACTION` 0, `OPENDETECT` 1, `DEG_UNITS` 1, `ALARM_BEEPS` 3, **`KEY_BEEPS` 0**, `LCD_BACKLIGHT` 50, `LCD_CONTRAST` 10, `MENU_SCROLLING` 0; probe names `Cook`/`Food1`/`Food2`/`Food3`; `WIFIMODE`/`DHCP`/`WIFI_ENC` = 1; SMTP host `smtp.hostname.com`, port 0.
+> - Wire line endings appear to be CRLF with occasional trailing spaces (the emulator canonicalizes to LF).
+
 ---
 
 ## Table of Contents

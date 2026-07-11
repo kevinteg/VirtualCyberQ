@@ -16,13 +16,10 @@ from __future__ import annotations
 
 from virtualcyberq.core.enums import (
     DegUnits,
-    Dhcp,
     OnOff,
     RampSource,
     StatusCode,
     TimeoutAction,
-    WifiEnc,
-    WifiMode,
 )
 from virtualcyberq.core.state import (
     ControlConfig,
@@ -66,14 +63,15 @@ __all__ = [
 ]
 
 # --- Firmware persona -------------------------------------------------------
-DEFAULT_FWVER = "3.1"
+# The validated real unit reports firmware 1.7; personas: 1.7 / 2.3 / 3.1 / 4.08 (Cloud).
+DEFAULT_FWVER = "1.7"
 
 # --- Verified factory defaults (tenths-degF for temperatures) ---------------
 FACTORY_COOK_SET = 2750  # 275.0 degF
 FACTORY_FOOD_SET = 1800  # 180.0 degF (all three food probes)
 FACTORY_COOKHOLD = 2000  # 200.0 degF
 FACTORY_ALARMDEV = 500  # 50.0 degF
-FACTORY_PROPBAND = 250  # 25.0 degF
+FACTORY_PROPBAND = 300  # 30.0 degF (verified on a real v1.7 unit)
 FACTORY_CYCTIME = 6  # seconds
 
 # --- Verified factory system defaults ---------------------------------------
@@ -86,15 +84,22 @@ FACTORY_WIFI_IP = "192.168.101.10"
 FACTORY_WIFI_NM = "255.255.255.0"
 FACTORY_WIFI_GW = "192.168.101.1"
 FACTORY_WIFI_DNS = "192.168.101.1"
-FACTORY_WIFI_SSID = "my CYBERQ Wifi"
+FACTORY_WIFI_SSID = "CyberQ"
 FACTORY_WIFI_KEY = "1234abcdef"
-FACTORY_WIFI_MAC = "00:04:A3:00:00:00"
+FACTORY_WIFI_MAC = "00:1E:C0:00:00:00"  # BBQ Guru OUI prefix
 FACTORY_HTTP_PORT = 80
+# Observed on a real v1.7 unit (our WifiMode/WifiEnc enum codes differ; these are
+# the raw wire values the device actually reports).
+FACTORY_WIFIMODE = 1
+FACTORY_DHCP = 1
+FACTORY_WIFI_ENC = 1
 
 # --- Verified factory SMTP defaults -----------------------------------------
-FACTORY_SMTP_HOST = "mail.cyberqmail.com"
-FACTORY_SMTP_PORT = 587
-FACTORY_SMTP_SUBJ = "CyberQ Status Report"
+FACTORY_SMTP_HOST = "smtp.hostname.com"
+FACTORY_SMTP_PORT = 0
+FACTORY_SMTP_TO = "destination@someplace.com"
+FACTORY_SMTP_FROM = "source@someplace.com"
+FACTORY_SMTP_SUBJ = "Temperature Controller Status E-Mail"
 
 # --- Factory (generic) probe labels -----------------------------------------
 FACTORY_COOK_NAME = "Cook"
@@ -133,7 +138,7 @@ def factory_system() -> SystemConfig:
         lcd_contrast=FACTORY_LCD_CONTRAST,
         deg_units=DegUnits.FAHRENHEIT,
         alarm_beeps=FACTORY_ALARM_BEEPS,
-        key_beeps=OnOff.ON,
+        key_beeps=OnOff.OFF,
     )
 
 
@@ -144,10 +149,10 @@ def factory_wifi() -> WifiConfig:
         nm=FACTORY_WIFI_NM,
         gw=FACTORY_WIFI_GW,
         dns=FACTORY_WIFI_DNS,
-        wifimode=int(WifiMode.INFRASTRUCTURE),
-        dhcp=int(Dhcp.OFF),
+        wifimode=FACTORY_WIFIMODE,
+        dhcp=FACTORY_DHCP,
         ssid=FACTORY_WIFI_SSID,
-        wifi_enc=int(WifiEnc.WPA2_AES),
+        wifi_enc=FACTORY_WIFI_ENC,
         wifi_key=FACTORY_WIFI_KEY,
         http_port=FACTORY_HTTP_PORT,
         mac=FACTORY_WIFI_MAC,
@@ -161,8 +166,8 @@ def factory_smtp() -> SmtpConfig:
         port=FACTORY_SMTP_PORT,
         user="",
         pwd="",
-        to="",
-        frm="",
+        to=FACTORY_SMTP_TO,
+        frm=FACTORY_SMTP_FROM,
         subj=FACTORY_SMTP_SUBJ,
         alert=0,
     )

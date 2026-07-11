@@ -3,7 +3,7 @@
 
 Pins the verified factory defaults (Appendix A) so a regression in the single
 source of truth (``core/defaults.py``) is caught immediately: COOK_SET 275, food
-180, COOKHOLD 200, ALARMDEV 50, PROPBAND 25, CYCTIME 6, plus the demo seed
+180, COOKHOLD 200, ALARMDEV 50, PROPBAND 30, CYCTIME 6, plus the demo seed
 values (Big Green Egg / Chicken Quarters 155 / Beef Brisket 180 / Pork Chop 160).
 """
 
@@ -36,7 +36,7 @@ class TestFactoryTemperatureDefaults:
         ctl = factory_state().control
         assert ctl.cookhold == 2000  # 200.0 degF
         assert ctl.alarmdev == 500  # 50.0 degF
-        assert ctl.propband == 250  # 25.0 degF
+        assert ctl.propband == 300  # 30.0 degF (verified on a real v1.7 unit)
         assert ctl.cyctime == 6
 
 
@@ -53,11 +53,11 @@ class TestFactoryEnumDefaults:
         assert sysc.lcd_backlight == 50
         assert sysc.lcd_contrast == 10
         assert sysc.alarm_beeps == 3
-        assert sysc.key_beeps is OnOff.ON
+        assert sysc.key_beeps is OnOff.OFF  # real v1.7 unit ships KEY_BEEPS off
         assert sysc.menu_scrolling is OnOff.OFF
 
     def test_default_persona(self) -> None:
-        assert factory_state().fwver == "3.1"
+        assert factory_state().fwver == "1.7"  # matches the validated real unit
 
     def test_read_only_fields_start_clean(self) -> None:
         st = factory_state()
@@ -107,14 +107,20 @@ class TestFactoryWifiSmtp:
         assert wifi.ip == "192.168.101.10"
         assert wifi.http_port == 80
         assert wifi.wifi_key == "1234abcdef"
-        # config.xml example uses WPA2_AES == 6.
-        assert wifi.wifi_enc == 6
-        assert wifi.mac == "00:04:A3:00:00:00"
+        assert wifi.ssid == "CyberQ"
+        # Real v1.7 unit reports WIFIMODE/DHCP/WIFI_ENC == 1 (our enum codes differ).
+        assert wifi.wifi_enc == 1
+        assert wifi.wifimode == 1
+        assert wifi.dhcp == 1
+        assert wifi.mac == "00:1E:C0:00:00:00"
 
     def test_smtp_defaults(self) -> None:
         smtp = factory_state().smtp
-        assert smtp.host == "mail.cyberqmail.com"
-        assert smtp.port == 587
+        assert smtp.host == "smtp.hostname.com"
+        assert smtp.port == 0
+        assert smtp.to == "destination@someplace.com"
+        assert smtp.frm == "source@someplace.com"
+        assert smtp.subj == "Temperature Controller Status E-Mail"
 
 
 class TestDataclassShapes:

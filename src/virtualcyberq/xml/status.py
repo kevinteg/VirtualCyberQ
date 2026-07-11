@@ -7,9 +7,10 @@ element is ``<nutcstatus>``. Every temperature is emitted as integer
 tenths-of-degF, an open probe as the literal string ``OPEN``, and each
 ``*_STATUS`` as the shared 0..7 status integer.
 
-The document is prefixed with the device's verbatim three-line temperature
-comment block; real clients have been observed to depend on the exact document
-shape, so it is reproduced byte-for-byte.
+The document opens with ``<nutcstatus>`` and then the device's verbatim two-line
+temperature comment block -- the comments live *inside* the root element, indented
+like the data (3 spaces). Aligned to a captured real v1.7 unit; note it does NOT
+emit a ``FAN_SHORTED`` element on this firmware.
 """
 
 from __future__ import annotations
@@ -17,16 +18,22 @@ from __future__ import annotations
 from virtualcyberq.core.state import DeviceState, ProbeState
 from virtualcyberq.core.units import encode_temp, seconds_to_hms
 
-__all__ = ["TEMP_COMMENT_BLOCK", "render_status"]
+__all__ = ["INDENT", "TEMP_COMMENT_BLOCK", "TEMP_COMMENT_LINES", "render_status"]
 
-#: The verbatim temperature-comment block the device emits ahead of every feed
-#: (PROTOCOL section 3). Reproduced byte-for-byte, including the double space
-#: after "unit." on the second line.
-TEMP_COMMENT_BLOCK = (
-    "<!--all temperatures are displayed in tenths F, regardless of setting of unit-->\n"
-    "<!--all temperatures sent by browser to unit should be in F.  you can send-->\n"
-    "<!--tenths F with a decimal place, ex: 123.5-->"
+#: The device indents 3 spaces per level (6 spaces for nested probe children).
+INDENT = "   "
+
+#: The verbatim two-line temperature-comment block the device emits *inside* every
+#: feed's root element (PROTOCOL section 3) -- note the double space after "in F."
+#: on the second line.
+TEMP_COMMENT_LINES = (
+    "<!--all temperatures are displayed in tenths F, regardless of setting of unit-->",
+    "<!--all temperatures sent by browser to unit should be in F.  "
+    "you can send tenths F with a decimal place, ex: 123.5-->",
 )
+
+#: The temperature comment block joined as one string (kept for callers/tests).
+TEMP_COMMENT_BLOCK = "\n".join(TEMP_COMMENT_LINES)
 
 
 def _probe_temp(probe: ProbeState) -> str:
@@ -59,25 +66,24 @@ def render_status(state: DeviceState) -> str:
     food2 = state.food2
     food3 = state.food3
 
-    lines = [
-        TEMP_COMMENT_BLOCK,
-        "<nutcstatus>",
-        f"\t<OUTPUT_PERCENT>{int(state.output_percent)}</OUTPUT_PERCENT>",
-        f"\t<TIMER_CURR>{seconds_to_hms(state.timer.remaining_s)}</TIMER_CURR>",
-        f"\t<COOK_TEMP>{_probe_temp(cook)}</COOK_TEMP>",
-        f"\t<FOOD1_TEMP>{_probe_temp(food1)}</FOOD1_TEMP>",
-        f"\t<FOOD2_TEMP>{_probe_temp(food2)}</FOOD2_TEMP>",
-        f"\t<FOOD3_TEMP>{_probe_temp(food3)}</FOOD3_TEMP>",
-        f"\t<COOK_STATUS>{_probe_status(cook)}</COOK_STATUS>",
-        f"\t<FOOD1_STATUS>{_probe_status(food1)}</FOOD1_STATUS>",
-        f"\t<FOOD2_STATUS>{_probe_status(food2)}</FOOD2_STATUS>",
-        f"\t<FOOD3_STATUS>{_probe_status(food3)}</FOOD3_STATUS>",
-        f"\t<TIMER_STATUS>{int(state.timer.status)}</TIMER_STATUS>",
-        f"\t<DEG_UNITS>{int(state.system.deg_units)}</DEG_UNITS>",
-        f"\t<COOK_CYCTIME>{int(state.control.cyctime)}</COOK_CYCTIME>",
-        f"\t<COOK_PROPBAND>{int(state.control.propband)}</COOK_PROPBAND>",
-        f"\t<COOK_RAMP>{int(state.control.cook_ramp)}</COOK_RAMP>",
-        f"\t<FAN_SHORTED>{1 if state.fan_shorted else 0}</FAN_SHORTED>",
+    i = INDENT
+    lines = ["<nutcstatus>", *(i + c for c in TEMP_COMMENT_LINES)]
+    lines += [
+        f"{i}<OUTPUT_PERCENT>{int(state.output_percent)}</OUTPUT_PERCENT>",
+        f"{i}<TIMER_CURR>{seconds_to_hms(state.timer.remaining_s)}</TIMER_CURR>",
+        f"{i}<COOK_TEMP>{_probe_temp(cook)}</COOK_TEMP>",
+        f"{i}<FOOD1_TEMP>{_probe_temp(food1)}</FOOD1_TEMP>",
+        f"{i}<FOOD2_TEMP>{_probe_temp(food2)}</FOOD2_TEMP>",
+        f"{i}<FOOD3_TEMP>{_probe_temp(food3)}</FOOD3_TEMP>",
+        f"{i}<COOK_STATUS>{_probe_status(cook)}</COOK_STATUS>",
+        f"{i}<FOOD1_STATUS>{_probe_status(food1)}</FOOD1_STATUS>",
+        f"{i}<FOOD2_STATUS>{_probe_status(food2)}</FOOD2_STATUS>",
+        f"{i}<FOOD3_STATUS>{_probe_status(food3)}</FOOD3_STATUS>",
+        f"{i}<TIMER_STATUS>{int(state.timer.status)}</TIMER_STATUS>",
+        f"{i}<DEG_UNITS>{int(state.system.deg_units)}</DEG_UNITS>",
+        f"{i}<COOK_CYCTIME>{int(state.control.cyctime)}</COOK_CYCTIME>",
+        f"{i}<COOK_PROPBAND>{int(state.control.propband)}</COOK_PROPBAND>",
+        f"{i}<COOK_RAMP>{int(state.control.cook_ramp)}</COOK_RAMP>",
         "</nutcstatus>",
     ]
     return "\n".join(lines) + "\n"

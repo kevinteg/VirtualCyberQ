@@ -53,6 +53,22 @@ Initial release.
   `docs/CYBERQ_PROTOCOL.md`, `docs/scenarios.md`, and example scripts under
   `examples/`.
 
+### Calibrated against a real unit (firmware 1.7)
+
+The XML serializers and factory defaults were corrected against captured
+`status.xml` / `all.xml` / `config.xml` dumps from a real CyberQ WiFi:
+
+- Comment block moved **inside** the root element and reduced to the real 2-line
+  form (plus the per-feed "this is similar to …" lead comment on all/config);
+  3-space indentation; **`status.xml` no longer emits `FAN_SHORTED`** on 1.7.
+- `<WIFI>` `<MAC>` now sits right after `<SSID>`.
+- Factory defaults fixed: **`FWVER` 1.7**, **`PROPBAND` 300** (30 °F, was 25),
+  **`KEY_BEEPS` off**, SMTP block (`smtp.hostname.com`, port 0, generic to/from),
+  `WIFIMODE`/`DHCP`/`WIFI_ENC` = 1.
+- `tests/wire/` now enforces a **byte-for-byte golden contract** against these
+  captured (LF-canonicalized, network-field-sanitized) fixtures — no longer
+  `xfail`.
+
 ### Notes / known limitations
 
 - **Thermal constants are provisional.** The pit ramp, overshoot (~25–30 °F on a
@@ -61,10 +77,10 @@ Initial release.
   calibrated against a real unit. They are all tunable via the profiles; the
   DESIGN §6.1 integral-bias option (to hold at setpoint with ~10 % output) is
   documented but not yet enabled.
-- **Wire byte-for-byte contract is placeholder-backed.** `tests/wire/` compares
-  the serializers against self-generated fixtures; the strict byte-for-byte
-  contract test is `xfail` until captured real-device `status.xml` / `all.xml` /
-  `config.xml` dumps replace the placeholders in `tests/fixtures/`.
+- **Line endings canonicalized to LF.** The captured dumps suggest the real unit
+  emits CRLF (`\r\n`) with trailing spaces on some lines; the serializers emit
+  clean LF. This is a one-line change if exact byte-for-byte CRLF is desired
+  (confirm with `curl -s http://<ip>/status.xml | xxd | head`).
 - **`HEAD` on unknown paths / methods** return a minimal `text/html` body rather
   than a FastAPI JSON error, so the device plane can't be fingerprinted as an
   emulator; the real unit's exact `HEAD`/error behavior is not documented.

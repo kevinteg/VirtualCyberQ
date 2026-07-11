@@ -205,7 +205,7 @@ class TestPowerFaults:
         sim.faults.inject(Fault(id="power.brownout", duration_s=10.0, params={"reset": True}))
         sim.advance(1.0)
         sim.advance(20.0)  # power returns -> factory reset applied
-        assert sim.state.control.propband == 250  # back to factory 25.0 degF
+        assert sim.state.control.propband == 300  # back to factory 30.0 degF
 
     def test_reboot_offline_window(self) -> None:
         sim = _sim()
