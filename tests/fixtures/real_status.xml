@@ -1,6 +1,6 @@
 <nutcstatus>
    <!--all temperatures are displayed in tenths F, regardless of setting of unit-->
-   <!--all temperatures sent by browser to unit should be in F.  you can send tenths F with a decimal place, ex: 123.5-->
+   <!--all temperatures sent by browser to unit should be in F.  you can send tenths F with a decimal place, ex: 123.5-->  
    <OUTPUT_PERCENT>0</OUTPUT_PERCENT>
    <TIMER_CURR>00:00:00</TIMER_CURR>
    <COOK_TEMP>OPEN</COOK_TEMP>

@@ -34,6 +34,7 @@ from virtualcyberq.core.enums import (
     StatusCode,
     TimeoutAction,
 )
+from virtualcyberq.core.personas import get_persona
 from virtualcyberq.core.state import DeviceState, ProbeState, SimState
 
 __all__ = [
@@ -257,8 +258,8 @@ def _update_timer_status(state: DeviceState, sim: SimState) -> None:
 
 
 def _shutdown_is_fan_off(state: DeviceState) -> bool:
-    """Whether this persona turns the fan off on SHUTDOWN (v2.3+) vs sets 32 degF."""
-    return not state.fwver.startswith("1.")
+    """Whether this persona turns the fan off on SHUTDOWN (2.3+) vs sets 32 degF."""
+    return get_persona(state.fwver).shutdown_fan_off
 
 
 # --- open-lid ---------------------------------------------------------------

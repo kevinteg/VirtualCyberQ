@@ -65,9 +65,22 @@ The XML serializers and factory defaults were corrected against captured
 - Factory defaults fixed: **`FWVER` 1.7**, **`PROPBAND` 300** (30 °F, was 25),
   **`KEY_BEEPS` off**, SMTP block (`smtp.hostname.com`, port 0, generic to/from),
   `WIFIMODE`/`DHCP`/`WIFI_ENC` = 1.
-- `tests/wire/` now enforces a **byte-for-byte golden contract** against these
-  captured (LF-canonicalized, network-field-sanitized) fixtures — no longer
-  `xfail`.
+- **Byte-for-byte wire fidelity.** The serializers now emit the real unit's exact
+  bytes — **CRLF** line endings, the trailing spaces (2 after the 2nd comment; 3
+  after `TIMER_CURR` in all/config), and no trailing newline — and the device
+  headers match (bare `Content-Type: text/xml`, `Cache-Control: no-cache`,
+  `Connection: close`, no `Server`/`Content-Length`). A live diff confirms
+  `status.xml` and `all.xml` are **byte-identical** to the real unit; `config.xml`
+  matches except the WiFi/SMTP network fields (sanitized in the fixtures).
+  `tests/wire/` enforces this as a hard golden contract (no longer `xfail`).
+
+### Firmware personas
+
+- Selectable firmware personas (`core/personas.py`): **1.7** (byte-verified) plus
+  documented **2.3** / **3.1** (the SHUTDOWN-turns-blower-off behavior). Each
+  bundles its wire format + behavior. Choose via `virtual-cyberq --firmware 3.1`
+  (or `--persona`), `--list-personas`, the admin `GET/POST /__admin/persona[s]`,
+  or a scenario's `persona:` field. Default is **1.7** (the validated unit).
 
 ### Notes / known limitations
 
@@ -77,10 +90,9 @@ The XML serializers and factory defaults were corrected against captured
   calibrated against a real unit. They are all tunable via the profiles; the
   DESIGN §6.1 integral-bias option (to hold at setpoint with ~10 % output) is
   documented but not yet enabled.
-- **Line endings canonicalized to LF.** The captured dumps suggest the real unit
-  emits CRLF (`\r\n`) with trailing spaces on some lines; the serializers emit
-  clean LF. This is a one-line change if exact byte-for-byte CRLF is desired
-  (confirm with `curl -s http://<ip>/status.xml | xxd | head`).
+- **Only firmware 1.7 is byte-verified.** The 2.3 / 3.1 personas reuse the 1.7
+  wire format (no captures of those versions yet) with the documented behavioral
+  difference; capturing a real 2.3/3.1 unit would let them be verified too.
 - **`HEAD` on unknown paths / methods** return a minimal `text/html` body rather
   than a FastAPI JSON error, so the device plane can't be fingerprinted as an
   emulator; the real unit's exact `HEAD`/error behavior is not documented.

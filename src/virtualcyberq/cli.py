@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+from virtualcyberq.core.personas import DEFAULT_PERSONA, get_persona, persona_choices
 from virtualcyberq.core.simulation import Simulation
 from virtualcyberq.scenario import ScenarioRunner, load_builtin, load_scenario
 from virtualcyberq.web.server import run_servers
@@ -63,8 +64,19 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--persona",
-        default=None,
-        help='Firmware persona to emulate (e.g. "1.7", "2.3", "3.1").',
+        "--firmware",
+        dest="persona",
+        default=DEFAULT_PERSONA,
+        metavar="FWVER",
+        help=(
+            f"Firmware version to emulate (default: {DEFAULT_PERSONA}; only 1.7 is "
+            "byte-verified). Use --list-personas to see the choices."
+        ),
+    )
+    parser.add_argument(
+        "--list-personas",
+        action="store_true",
+        help="List the supported firmware personas and exit.",
     )
     parser.add_argument(
         "--no-tick",
@@ -94,9 +106,15 @@ def main(argv: list[str] | None = None) -> int:
     """
     args = build_parser().parse_args(argv)
 
+    if args.list_personas:
+        print("Supported firmware personas:")
+        for fwver, label in persona_choices():
+            mark = "verified" if get_persona(fwver).verified else "documented"
+            print(f"  {fwver:<6} {label}  [{mark}]")
+        return 0
+
     sim = Simulation(seed=args.seed, speed=args.speed)
-    if args.persona:
-        sim.set_persona(args.persona)
+    sim.set_persona(args.persona)
     if args.scenario:
         try:
             _load_scenario_onto(sim, args.scenario)
@@ -104,10 +122,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"error: could not load scenario {args.scenario!r}: {exc}", file=sys.stderr)
             return 2
 
+    persona = get_persona(args.persona)
+    verified = "verified" if persona.verified else "documented"
     print(
         f"VirtualCyberQ device -> http://{args.host}:{args.device_port}  "
         f"admin -> http://{args.host}:{args.admin_port}/__admin/docs  "
-        f"(seed={args.seed}, speed={args.speed})",
+        f"(firmware={persona.fwver} [{verified}], seed={args.seed}, speed={args.speed})",
         file=sys.stderr,
     )
     try:

@@ -115,6 +115,30 @@ the hardware). Nothing from the admin plane leaks onto it.
 curl http://localhost:8080/status.xml
 ```
 
+Fidelity is exact: for a factory unit with no probes plugged in, `status.xml` and
+`all.xml` are **byte-identical** to a real firmware-1.7 CyberQ WiFi (CRLF line
+endings, trailing spaces, no trailing newline included), and the response headers
+match (`Content-Type: text/xml`, `Cache-Control: no-cache`, `Connection: close`,
+no `Server`).
+
+---
+
+## Choose a firmware version
+
+Real units differ slightly by firmware. Pick which one to emulate:
+
+```bash
+virtual-cyberq --list-personas          # 1.7 [verified], 2.3, 3.1 [documented]
+virtual-cyberq --firmware 3.1           # emulate firmware 3.1 (default: 1.7)
+```
+
+At runtime, switch or query via the admin plane
+(`GET /__admin/personas`, `POST /__admin/persona`) or a scenario's `persona:`
+field. **Firmware 1.7** is byte-verified against real hardware; **2.3 / 3.1** add
+the documented behavioral difference (a SHUTDOWN timeout turns the blower off
+instead of dropping the setpoint to 32 °F) and otherwise reuse the 1.7 wire
+format pending a capture of those versions.
+
 ---
 
 ## The control / admin API

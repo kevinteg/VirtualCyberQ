@@ -15,6 +15,7 @@ emit a ``FAN_SHORTED`` element on this firmware.
 
 from __future__ import annotations
 
+from virtualcyberq.core.personas import WireFormat, get_persona
 from virtualcyberq.core.state import DeviceState, ProbeState
 from virtualcyberq.core.units import encode_temp, seconds_to_hms
 
@@ -50,6 +51,30 @@ def _probe_status(probe: ProbeState) -> int:
     return int(probe.status)
 
 
+def _comment_lines(lead: str | None, wire: WireFormat) -> list[str]:
+    """Return the indented in-root comment lines for a feed.
+
+    ``lead`` is the optional per-feed lead comment (``all.xml`` / ``config.xml``);
+    the two-line temperature block follows, with the persona's trailing spaces on
+    the second line.
+    """
+    i = wire.indent
+    out: list[str] = []
+    if lead is not None:
+        out.append(i + lead)
+    out.append(i + TEMP_COMMENT_LINES[0])
+    out.append(i + TEMP_COMMENT_LINES[1] + wire.comment2_trailing)
+    return out
+
+
+def _finish(lines: list[str], wire: WireFormat) -> str:
+    """Join document lines with the persona EOL, honoring the trailing-newline trait."""
+    doc = wire.eol.join(lines)
+    if wire.trailing_newline:
+        doc += wire.eol
+    return doc
+
+
 def render_status(state: DeviceState) -> str:
     """Render the ``status.xml`` document for ``state``.
 
@@ -66,11 +91,13 @@ def render_status(state: DeviceState) -> str:
     food2 = state.food2
     food3 = state.food3
 
-    i = INDENT
-    lines = ["<nutcstatus>", *(i + c for c in TEMP_COMMENT_LINES)]
+    wire = get_persona(state.fwver).wire
+    i = wire.indent
+    lines = ["<nutcstatus>", *_comment_lines(None, wire)]
     lines += [
         f"{i}<OUTPUT_PERCENT>{int(state.output_percent)}</OUTPUT_PERCENT>",
-        f"{i}<TIMER_CURR>{seconds_to_hms(state.timer.remaining_s)}</TIMER_CURR>",
+        f"{i}<TIMER_CURR>{seconds_to_hms(state.timer.remaining_s)}</TIMER_CURR>"
+        f"{wire.status_timer_trailing}",
         f"{i}<COOK_TEMP>{_probe_temp(cook)}</COOK_TEMP>",
         f"{i}<FOOD1_TEMP>{_probe_temp(food1)}</FOOD1_TEMP>",
         f"{i}<FOOD2_TEMP>{_probe_temp(food2)}</FOOD2_TEMP>",
@@ -84,6 +111,8 @@ def render_status(state: DeviceState) -> str:
         f"{i}<COOK_CYCTIME>{int(state.control.cyctime)}</COOK_CYCTIME>",
         f"{i}<COOK_PROPBAND>{int(state.control.propband)}</COOK_PROPBAND>",
         f"{i}<COOK_RAMP>{int(state.control.cook_ramp)}</COOK_RAMP>",
-        "</nutcstatus>",
     ]
-    return "\n".join(lines) + "\n"
+    if wire.status_fan_shorted:
+        lines.append(f"{i}<FAN_SHORTED>{1 if state.fan_shorted else 0}</FAN_SHORTED>")
+    lines.append("</nutcstatus>")
+    return _finish(lines, wire)

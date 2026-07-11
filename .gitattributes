@@ -1,0 +1,4 @@
+# The wire fixtures are byte-exact captures of a real CyberQ WiFi (CRLF line
+# endings, trailing spaces, no trailing newline). Never let git normalize them,
+# or the byte-for-byte contract test would break.
+tests/fixtures/*.xml -text

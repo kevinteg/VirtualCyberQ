@@ -22,6 +22,7 @@ from typing import TYPE_CHECKING, Any
 from fastapi import Body, FastAPI, HTTPException, Query, Response
 
 from virtualcyberq.core.faults import Fault
+from virtualcyberq.core.personas import PERSONAS, get_persona
 from virtualcyberq.core.simulation import _to_plain  # JSON-friendly serializer
 from virtualcyberq.scenario import (
     ScenarioRunner,
@@ -289,6 +290,23 @@ def build_admin_app(
         return _to_plain(sim.state)  # type: ignore[return-value]
 
     # ----------------------------------------------------------------- persona
+    @app.get(f"{ADMIN_PREFIX}/personas", tags=["persona"])
+    async def list_personas() -> dict[str, Any]:
+        current = get_persona(sim.state.fwver)
+        return {
+            "current": current.fwver,
+            "personas": [
+                {
+                    "fwver": p.fwver,
+                    "label": p.label,
+                    "verified": p.verified,
+                    "shutdown_fan_off": p.shutdown_fan_off,
+                    "notes": p.notes,
+                }
+                for p in PERSONAS.values()
+            ],
+        }
+
     @app.post(f"{ADMIN_PREFIX}/persona", response_model=PersonaResponse, tags=["persona"])
     async def set_persona(req: PersonaRequest) -> PersonaResponse:
         return PersonaResponse(fwver=sim.set_persona(req.fwver))

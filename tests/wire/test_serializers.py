@@ -64,9 +64,19 @@ class TestGoldenContract:
 
     @pytest.mark.parametrize("filename, render", _CASES)
     def test_matches_captured_real_device(self, filename: str, render: object) -> None:
-        expected = (_FIXTURES / filename).read_text()
-        produced = render(_unplugged_factory())  # type: ignore[operator]
+        # Byte-for-byte (CRLF, trailing spaces, no trailing newline). status.xml and
+        # all.xml are byte-identical to the real firmware-1.7 unit; config.xml matches
+        # except the WiFi/SMTP network fields, which are sanitized in the fixtures.
+        expected = (_FIXTURES / filename).read_bytes()
+        produced = render(_unplugged_factory()).encode("latin-1")  # type: ignore[operator]
         assert produced == expected
+
+    @pytest.mark.parametrize("filename, render", _CASES)
+    def test_fixture_is_crlf_without_trailing_newline(self, filename: str, render: object) -> None:
+        raw = (_FIXTURES / filename).read_bytes()
+        assert b"\r\n" in raw
+        assert raw.count(b"\n") == raw.count(b"\r\n")  # no lone LF
+        assert not raw.endswith(b"\n")  # the device sends no trailing newline
 
     @pytest.mark.parametrize("filename, render", _CASES)
     def test_fixture_parses_as_xml(self, filename: str, render: object) -> None:

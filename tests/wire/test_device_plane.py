@@ -93,9 +93,13 @@ class TestDeviceFidelity:
         assert r.headers["content-type"].startswith("text/xml")
 
     def test_fidelity_headers(self, cyberq_url: str) -> None:
+        # Matches the captured real firmware-1.7 unit: bare text/xml, no charset,
+        # Cache-Control: no-cache, Connection: close, and NO Server header.
         r = httpx.get(f"{cyberq_url}/status.xml")
-        assert r.headers.get("server") == "CyberQ"
+        assert r.headers["content-type"] == "text/xml"
+        assert r.headers.get("cache-control") == "no-cache"
         assert r.headers.get("connection") == "close"
+        assert "server" not in r.headers
 
     def test_head_status_xml_succeeds(self, cyberq_url: str) -> None:
         # A proxy's health-check HEAD must succeed with the XML content-type and

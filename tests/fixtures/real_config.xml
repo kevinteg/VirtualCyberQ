@@ -1,7 +1,7 @@
 <nutcallstatus>
    <!--this is similar to all.xml, but with more values-->
    <!--all temperatures are displayed in tenths F, regardless of setting of unit-->
-   <!--all temperatures sent by browser to unit should be in F.  you can send tenths F with a decimal place, ex: 123.5-->
+   <!--all temperatures sent by browser to unit should be in F.  you can send tenths F with a decimal place, ex: 123.5-->  
    <COOK>
       <COOK_NAME>Cook</COOK_NAME>
       <COOK_TEMP>OPEN</COOK_TEMP>
@@ -27,7 +27,7 @@
       <FOOD3_STATUS>4</FOOD3_STATUS>
    </FOOD3>
    <OUTPUT_PERCENT>0</OUTPUT_PERCENT>
-   <TIMER_CURR>00:00:00</TIMER_CURR>
+   <TIMER_CURR>00:00:00</TIMER_CURR>   
    <TIMER_STATUS>0</TIMER_STATUS>
    <SYSTEM>
       <MENU_SCROLLING>0</MENU_SCROLLING>

@@ -32,6 +32,7 @@ import asyncio
 from typing import TYPE_CHECKING, Any, cast
 
 from virtualcyberq.core.faults import RequestContext
+from virtualcyberq.core.personas import get_persona
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from virtualcyberq.core.simulation import Simulation
@@ -179,26 +180,37 @@ class DeviceFaultMiddleware:
         content_type: bytes | None,
         content_length: int,
     ) -> list[tuple[bytes, bytes]]:
-        """Return headers with device-fidelity touches (Server, Connection: close).
+        """Return response headers matching the selected firmware persona.
 
-        Drops the app's ``Connection`` / ``Server`` / ``Content-Length`` headers
-        and re-adds a terse ``Server: CyberQ``, an explicit ``Connection: close``
-        (HTTP/1.0-style, PROTOCOL 2.3), and a correct ``Content-Length``. When a
-        content-type override is present it replaces the app's ``Content-Type``.
+        Reproduces the real unit's header set (verified on firmware 1.7): a
+        **bare** ``Content-Type`` (the device sends ``text/xml`` with no charset),
+        ``Cache-Control: no-cache``, ``Connection: close``, and **no** ``Server``
+        or ``Content-Length`` header. All of these are persona-configurable via
+        :class:`~virtualcyberq.core.personas.WireFormat`. A fault ``content_type``
+        override, when present, replaces the app's content type.
         """
+        wire = get_persona(self._sim.state.fwver).wire
         out: list[tuple[bytes, bytes]] = []
         for k, v in headers:
             lk = bytes(k).lower()
-            if lk in (b"connection", b"server", b"content-length"):
+            if lk in (b"connection", b"server", b"content-length", b"cache-control"):
                 continue
-            if lk == b"content-type" and content_type is not None:
-                continue  # replaced below
+            if lk == b"content-type":
+                if content_type is not None:
+                    continue  # fault override replaces it below
+                # Bare the app's content type (drop "; charset=..."), like the device.
+                out.append((b"content-type", bytes(v).split(b";", 1)[0].strip()))
+                continue
             out.append((bytes(k), bytes(v)))
         if content_type is not None:
             out.append((b"content-type", content_type))
-        out.append((b"content-length", str(content_length).encode("ascii")))
+        if wire.cache_control:
+            out.append((b"cache-control", wire.cache_control.encode("latin-1")))
+        if wire.send_content_length:
+            out.append((b"content-length", str(content_length).encode("ascii")))
         out.append((b"connection", b"close"))
-        out.append((b"server", SERVER_HEADER))
+        if wire.send_server_header:
+            out.append((b"server", SERVER_HEADER))
         return out
 
     def _record(self, scope: dict[str, Any], request_body: bytes, fired: list[str]) -> None:
@@ -254,7 +266,6 @@ class DeviceFaultMiddleware:
                 "headers": [
                     (b"connection", b"close"),
                     (b"content-length", b"0"),
-                    (b"server", SERVER_HEADER),
                 ],
             }
         )
