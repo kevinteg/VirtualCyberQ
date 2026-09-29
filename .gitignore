@@ -28,3 +28,6 @@ coverage.xml
 .idea/
 .vscode/
 .DS_Store
+
+# Claude Code: .claude/settings.json is tracked, the local file never is
+.claude/settings.local.json
